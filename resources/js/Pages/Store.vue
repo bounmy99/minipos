@@ -106,7 +106,7 @@
        <!-- {{DataStore}} -->
        
        <!-- {{FormType}} -->
-      <div class="demo-inline-spacing d-flex justify-content-end mt-0 mb-3  me-3">
+      <div class="demo-inline-spacing d-flex justify-content-start mt-0 mb-3  ms-4">
         <button type="button" class="btn rounded-pill btn-primary" v-if="!FormShow" @click="add_store()">ເພີ່ມ</button>
         <button type="button" class="btn rounded-pill btn-success" v-if="FormShow" @click="save_Data()">ບັນທຶກ</button>
         <button type="button" class="btn rounded-pill btn-danger" v-if="FormShow" @click="cancel()">ຍົກເລີກ</button>
@@ -127,17 +127,23 @@
         <div class="row">
           <div class="col-md-6">
             <label for="defaultFormControlInput" class="form-label">ລາຄາຊື້</label>
-          <input type="text" class="form-control" id="" placeholder="ກະລຸນາປ້ອນລາຄາຊື້" v-model="FormData.prices_buy">
+          <cleave  :options="options" type="text" class="form-control" id="" placeholder="ກະລຸນາປ້ອນລາຄາຊື້" v-model="FormData.prices_buy" />
           </div>
           <div class="col-md-6">
             <label for="defaultFormControlInput" class="form-label">ລາຄາຂາຍ</label>
-          <input type="text" class="form-control" id="" placeholder="ກະລຸນາປ້ອນລາຄາຂາຍ" v-model="FormData.prices_sell">
+          <cleave  :options="options" type="text" class="form-control" id="" placeholder="ກະລຸນາປ້ອນລາຄາຂາຍ" v-model="FormData.prices_sell" />
           </div>
         </div>
      </div>
       </div>
-      <div class="table-responsive text-nowrap card-body" v-if="!FormShow">
-    <table class="table table-hover">
+      <div class="table-responsive text-nowrap card-body " v-if="!FormShow">
+        <div class="row mb-3">
+          <div class="col-md-6">
+              <input   class="form-control" placeholder="ຄົ້ນຫາຂໍ້ມູນ" v-model="search" @keyup.enter="getDataStore()">
+          </div>
+          <div class="col-md-6"></div>
+        </div>
+    <table class="table table-hover table-bordered">
       <thead>
         <tr>
           <th>ລະຫັດ</th>
@@ -149,12 +155,12 @@
         </tr>
       </thead>
       <tbody class="table-border-bottom-0">
-        <tr v-for="list in DataStore" :key="list.id">
+        <tr v-for="list in DataStore.data" :key="list.id">
           <td><strong>{{list.id}}</strong></td>
           <td><strong>{{list.name}}</strong></td>
           <td><strong>{{list.amount}}</strong></td>
-          <td><strong>{{list.prices_buy}}</strong></td>
-          <td><strong>{{list.prices_sell}}</strong></td>
+          <td><strong>{{formatPrice(list.prices_buy)}}</strong></td>
+          <td><strong>{{formatPrice(list.prices_sell)}}</strong></td>
           <td>
             <div class="dropdown">
               <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
@@ -167,6 +173,7 @@
         </tr>
       </tbody>
     </table>
+    <pagination :pagination="DataStore" :offset="4" @paginate="getDataStore($event)" />
   </div>
 </div>
 
@@ -178,6 +185,7 @@ export default {
 
     data() {
         return {
+            search:'',
             EditID :'',
             FormShow : false,
             FormType : false,
@@ -188,6 +196,19 @@ export default {
               prices_buy:'',
               prices_sell:'',
             },
+// ຟັງຊັນຕົວເລກສຳລັບໃຊ້ຫົວໜ່ວຍເງິນ
+            options: {
+                    prefix:'₭',
+                    numeral:true,
+                    numeralPositveOnly:true,
+                    noImmediaPrefix:true,
+                    rawValueTrimPrefix:true,
+                    numeralIntegerScale:10,
+                    numeralDecimalScale:2,
+                    numeralDecimalMark:'.',
+                    delimiter:','
+
+                }
         };
     },
 
@@ -196,6 +217,12 @@ export default {
     },
 
     methods: {
+// ຟັງຊັນຕົວເລກສຳລັບໃຊ້ສະແດງລາຄາເປັນເງິນ
+        formatPrice(value){
+          let val = (value / 1).toFixed(0).replace(",", ".");
+          return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g,",");      
+         },
+
         add_store(){
           this.FormShow = true;
         },
@@ -219,13 +246,16 @@ export default {
             FormDataStore.append("amount",this.FormData.amount);
             FormDataStore.append("prices_buy",this.FormData.prices_buy);
             FormDataStore.append("prices_sell",this.FormData.prices_sell);
+             this.$axios.get("/sanctum/csrf-cookie").then((response)=>{
 
-            this.$axios.post(`/api/store/update/${this.EditID}`,FormDataStore).then((response)=>{
-              // console.log("Update Data Successfully");
-              this.getDataStore();
-            }).catch((error)=>{
-              console.log(error);
+                    this.$axios.post(`/api/store/update/${this.EditID}`,FormDataStore).then((response)=>{
+                    // console.log("Update Data Successfully");
+                    this.getDataStore();
+                  }).catch((error)=>{
+                    console.log(error);
+                  });
             });
+            
           }else{// if variable FormType have values is false
 // add new data
 
@@ -243,13 +273,15 @@ export default {
             FormDataStore.append("amount",this.FormData.amount);
             FormDataStore.append("prices_buy",this.FormData.prices_buy);
             FormDataStore.append("prices_sell",this.FormData.prices_sell);
-
-            this.$axios.post("/api/store/add",FormDataStore).then((response)=>{
-              // console.log("Send Data Successfully");
-              this.getDataStore();
-            }).catch((error)=>{
-              console.log(error);
+            this.$axios.get("/sanctum/csrf-cookie").then((response)=>{
+              this.$axios.post("/api/store/add",FormDataStore).then((response)=>{
+                            // console.log("Send Data Successfully");
+                  this.getDataStore();
+                }).catch((error)=>{
+                  console.log(error);
+                });
             });
+            
 }
 // clear data input form
             this.FormData.name = '' 
@@ -270,14 +302,17 @@ export default {
 //ການຫາ ID ໃນກ້ອນຂໍ້ມູນ
 //         let item = this.DataStore.find((i)=>i.id == id); 
 //ການຫາ ID ໃນຖານຂໍ້ມູນ
-            this.$axios.get(`api/store/edit/${id}`).then((response)=>{
-              this.FormData.name = response.data.name 
-              this.FormData.amount = response.data.amount 
-              this.FormData.prices_buy = response.data.prices_buy
-              this.FormData.prices_sell = response.data.prices_sell
-            }).catch((error)=>{
-              console.log(error)
-            });
+          this.$axios.get("/sanctum/csrf-cookie").then((response)=>{
+                  this.$axios.get(`api/store/edit/${id}`).then((response)=>{
+                      this.FormData.name = response.data.name 
+                      this.FormData.amount = response.data.amount 
+                      this.FormData.prices_buy = response.data.prices_buy
+                      this.FormData.prices_sell = response.data.prices_sell
+                    }).catch((error)=>{
+                      console.log(error)
+                    });
+          });
+            
  //ການບັນທຶກການແກ້ໄຂໃນກ້ອນຂໍ້ມູນ           
         //  this.FormData.name = item.name 
         //  this.FormData.amount = item.amount 
@@ -302,39 +337,54 @@ export default {
             }).then((result) => {
 
               if (result.isConfirmed) {
-
-                this.$axios.delete(`api/store/delete/${id}`).then((response)=>{
-                this.$swal({
-                        position: 'top-center',
-                        icon: 'success',
-                        title: response.data.message,
-                        showConfirmButton: false,
-                        timer: 2000
-                      })
-                this.getDataStore();
-                }).catch((error)=>{
-                  console.log(error)
-                })
+                this.$axios.get("/sanctum/csrf-cookie").then((response)=>{
+                     this.$axios.delete(`api/store/delete/${id}`).then((response)=>{
+                          this.$swal({
+                                  position: 'top-center',
+                                  icon: 'success',
+                                  title: response.data.message,
+                                  showConfirmButton: false,
+                                  timer: 2000
+                                })
+                          this.getDataStore();
+                          }).catch((error)=>{
+                            console.log(error)
+                          });
+                });
+                
               }
             });
         },
 //call data from database     
-        getDataStore(){
-
-          this.$axios.get('api/store').then((response)=>{
-
-            this.DataStore = response.data;
-
-          }).catch((error)=>{
-
-            console.log(error);
-
-          })
+        getDataStore(page){
+          this.$axios.get("/sanctum/csrf-cookie").then((response)=>{
+                this.$axios.get(`api/store?page=${page}&search=${this.search}`).then((response)=>{
+                    this.DataStore = response.data;
+                  }).catch((error)=>{
+                    console.log(error);
+                  });
+              });
+          
         },
+    },
+    watch:{
+      "search"(){
+        if(this.search==''){
+          this.getDataStore();
+        }
+      }
     },
     created(){
       this.getDataStore();
     },
+
+    beforeRouteEnter (to, from, next) {
+      if(window.Laravel.isLoggin){
+          next();
+      }else{
+          window.location.href ="/login"
+      }
+    }
 
     
   

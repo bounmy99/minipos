@@ -20,7 +20,16 @@ export default {
 
     methods: {
         
+        
     },
+
+    beforeRouteEnter (to, from, next) {
+      if(window.Laravel.isLoggin){
+          next();
+      }else{
+          window.location.href ="/login"
+      }
+    }
 };
 </script>
 

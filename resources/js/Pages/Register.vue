@@ -55,9 +55,9 @@
                     </div>
                     <p class="text-center">
                         <span class="me-2">ຖ້າລົງທະບຽນແລ້ວຄຼິກທີ່ນີ້?</span>
-                        <a href="auth-register-basic.html">
+                        <router-link to="/login">
                         <span>ເພື່ອເຂົ້າສູ່ລະບົບ</span>
-                        </a>
+                        </router-link>
                     </p>
                 </form>
                 </div>
@@ -110,14 +110,35 @@ export default {
                         password: this.password
                     }).then((response)=>{
 
+                        if(response.data.success){
+
+                            this.$router.push('login');
+
+                        }else{
+                        this.$swal({
+                                    position: 'top-center',
+                                    icon: 'error',
+                                    title: response.data.message,
+                                    showConfirmButton: false,
+                                    timer: 3000
+                                })
+                        }
+
                     }).catch((error)=>{
                         console.log(error);
                     });
                 }
                 
             }
-        }
+        },
     },
+        beforeRouteEnter (to, from, next) {
+            if(!window.Laravel.isLoggin){
+                next();
+            }else{
+                window.location.href ="/login"
+            }
+            }
 };
 </script>
 

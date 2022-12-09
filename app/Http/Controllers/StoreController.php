@@ -8,8 +8,15 @@ use App\Models\Store;
 class StoreController extends Controller
 {
     public function index(){
-        $store = Store::orderBy('id','desc')->get();
-        return $store;
+
+        // $store = Store::orderBy('id','desc');
+        // return $store;
+        $search = \Request::get('search');
+        $store = Store::orderBy('id','desc')
+        ->where('name','LIKE',"%{$search}%")
+        ->paginate(5)
+        ->toArray();
+        return array_reverse($store);
     }
     public function add(Request $Request){
         try{

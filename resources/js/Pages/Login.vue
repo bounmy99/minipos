@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="container-xxl d-flex justify-content-center">
-          <div class="authentication-wrapper authentication-basic container-p-y col-md-3 ">
+          <div class="authentication-wrapper authentication-basic container-p-y col-md-4 ">
             <div class="authentication-inner">
             <!-- Register -->
               <div class="card">
@@ -53,6 +53,12 @@
                 <p class="mb-4 d-flex justify-content-center">ກະລຸນາເຂົ້າສູ່ລະບົບ</p>
 
                 <form id="formAuthentication" class="mb-3" action="index.html" method="POST">
+                    <div class="alert alert-danger alert-dismissible" role="alert" v-if="show_error">
+                            <i class="bx bx-info-circle fs-20"></i>
+                        {{ text_error }}
+                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+                        </button>
+                        </div>
                     <div class="mb-3">
                     <label for="email" class="form-label">ອີ່ເມວ</label>
                     <input type="text" class="form-control" placeholder="ກະລຸນາປ້ອນອີເມວ" v-model="email">
@@ -62,7 +68,7 @@
                         <label class="form-label" for="password">ລະຫັດຜ່ານ</label>
                     </div>
                     <div class="input-group input-group-merge">
-                        <input type="password"  class="form-control"  placeholder="ກະລຸນາປ້ອນລະຫັດຜ່ານ" v-model="password">
+                        <input type="password"  class="form-control"  placeholder="ກະລຸນາປ້ອນລະຫັດຜ່ານ" v-model="password" @keyup.enter="login()">
                     </div>
                     </div>
                     <div class="mb-3">
@@ -70,14 +76,13 @@
                     </div>
                     <p class="text-center">
                         <span class="me-2">ຖ້າຍັງບໍ່ທັນລົງທະບຽນຄຼິກທີ່ນີ້?</span>
-                        <a href="auth-register-basic.html">
+                        <router-link to="/register">
                         <span>ລົງທະບຽນ</span>
-                        </a>
+                        </router-link>
                     </p>
                 </form>
                 </div>
             </div>
-            <!-- /Register -->
             </div>
         </div>
         </div>
@@ -103,10 +108,42 @@ export default {
 
     methods: {
         login(){
-            console.log("email:"  + this.email,"password:" + this.password)
+            //console.log("email:"  + this.email,"password:" + this.password)
 
-        }
+            this.$axios.post("/api/login",{
+                        email: this.email,
+                        password: this.password
+                    }).then((response)=>{
+
+                        if(response.data.success){
+
+                            window.location.href = "/store";
+
+                        }else{
+                        this.$swal({
+                                    position: 'top-center',
+                                    icon: 'error',
+                                    title: response.data.message,
+                                    showConfirmButton: false,
+                                    timer: 3000
+                                })
+                        }
+
+                    }).catch((error)=>{
+                        console.log(error);
+                    });
+        },
+
+        
+        
     },
+    beforeRouteEnter (to, from, next) {
+            if(!window.Laravel.isLoggin){
+                next();
+            }else{
+                window.location.href ="/store"
+            }
+    }
 };
 </script>
 

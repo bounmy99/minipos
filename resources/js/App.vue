@@ -9,7 +9,7 @@
             <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme" v-if="isLoggin">
 
                 <div class="app-brand demo ">
-                    <router-link to="/" class="app-brand-link" :class="list1" @click="list3='',list4='',list2='',list1='active',MainList(1)">
+                    <router-link to="/store" class="app-brand-link" :class="list1" @click="list3='',list4='',list2='',list1='active',MainList(1)">
                         <span class="app-brand-logo demo">
 
                             <svg width="25" viewbox="0 0 25 42" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -62,7 +62,7 @@
 
                     <!-- Dashboard -->
                     <li class="menu-item " :class="MainL1 + list1" @click="list3='',list4='',list2='',list1='active',MainList(1)">
-                        <router-link  to="/" class="menu-link">
+                        <router-link  to="/store" class="menu-link">
                             <i class="menu-icon tf-icons bx bxl-product-hunt"></i>
                             <div data-i18n="Analytics">ລາຍການສະຕ໋ອກສີ້ນຄ້າ</div>
                         </router-link>
@@ -284,7 +284,7 @@
                                         <div class="dropdown-divider"></div>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="auth-login-basic.html">
+                                        <a class="dropdown-item" href="javascript:void(0);" @click="logout()">
                                             <i class="bx bx-power-off me-2"></i>
                                             <span class="align-middle">Log Out</span>
                                         </a>
@@ -533,7 +533,18 @@ export default {
                 this.list4 = 'active'
                 break;
             }
-        }
+        },
+
+        logout(){
+        this.$axios.post("/api/logout").then((response)=>{
+
+                        if(response.data.success){
+                            window.location.href="/login"
+                        }
+                    }).catch((error)=>{
+                        console.log(error);
+                    });
+    }
         
 
       
@@ -548,7 +559,9 @@ export default {
         }else{
             this.isLoggin = false;
         }
-    }
+    },
+     
+    
 };
 </script>
 

@@ -21,8 +21,10 @@ use App\Http\Controllers\UserController;
 
 
 Route::post('register',[UserController::class,'register']);
+Route::post('login',[UserController::class,'login']);
+Route::post('logout',[UserController::class,'logout']);
 
-Route::group(['prefix'=>'store'],function(){
+Route::group(['prefix'=>'store','middleware'=>'auth:sanctum'],function(){
 Route::post('add',[StoreController::class,'add']);
 Route::get('/',[StoreController::class,'index']);
 Route::get('edit/{id}',[StoreController::class,'edit']);
