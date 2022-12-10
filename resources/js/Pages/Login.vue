@@ -117,6 +117,14 @@ export default {
 
                         if(response.data.success){
 
+                            this.$swal({
+                                    position: 'top-center',
+                                    icon: 'success',
+                                    title: response.data.message,
+                                    showConfirmButton: false,
+                                    timer: 3000
+                                })
+
                             window.location.href = "/store";
 
                         }else{

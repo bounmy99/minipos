@@ -100,19 +100,18 @@
     <!-- table -->
 
     <div class="card">
-      <h5 class="card-header mb-0">Hoverable rows</h5>
+      <h5 class="card-header mb-0" v-if="!FormShow"><b>ລາຍການຂໍ້ມູນ</b></h5>
+      <h5 class="card-header mb-0" v-if="FormShow"><b>ແບບຟອມບັນທຶກຂໍ້ມູນ</b></h5>
       <!-- {{FormData}} -->
       
        <!-- {{DataStore}} -->
        
        <!-- {{FormType}} -->
       <div class="demo-inline-spacing d-flex justify-content-start mt-0 mb-3  ms-4">
-        <button type="button" class="btn rounded-pill btn-primary" v-if="!FormShow" @click="add_store()">ເພີ່ມ</button>
-        <button type="button" class="btn rounded-pill btn-success" v-if="FormShow" @click="save_Data()">ບັນທຶກ</button>
-        <button type="button" class="btn rounded-pill btn-danger" v-if="FormShow" @click="cancel()">ຍົກເລີກ</button>
+        <button type="button" class="btn rounded-pill btn-primary" v-if="!FormShow" @click="add_store()"><i class="bx bx-plus-circle mb-1"></i> ເພີ່ມ</button>
       </div>
       <div class="row card-body" v-if="FormShow">
-      <h5 class="card-header">Default</h5>
+      <!-- <h5 class="card-header">Default</h5> -->
       <div class="col-md-4">
           <label for="defaultFormControlInput" class="form-label">ຊື່ສີ້ນຄ້າ</label>
           <input type="text" class="form-control" id="" placeholder="John Doe" >
@@ -134,12 +133,21 @@
           <cleave  :options="options" type="text" class="form-control" id="" placeholder="ກະລຸນາປ້ອນລາຄາຂາຍ" v-model="FormData.prices_sell" />
           </div>
         </div>
+        <div class="d-flex justify-content-center mt-3">
+          <button type="button" class="btn rounded-pill btn-success me-2" v-if="FormShow" @click="save_Data()"><i class="bx bx-download mb-1"></i> ບັນທຶກ</button>
+          <button type="button" class="btn rounded-pill btn-danger" v-if="FormShow" @click="cancel()"><i class="bx bx-x-circle mb-1"></i> ຍົກເລີກ</button>
+        </div>
      </div>
       </div>
       <div class="table-responsive text-nowrap card-body " v-if="!FormShow">
         <div class="row mb-3">
           <div class="col-md-6">
-              <input   class="form-control" placeholder="ຄົ້ນຫາຂໍ້ມູນ" v-model="search" @keyup.enter="getDataStore()">
+              <!-- <input   class="form-control" placeholder="ຄົ້ນຫາຂໍ້ມູນ" v-model="search" @keyup.enter="getDataStore()"> -->
+              <div class="navbar-nav align-items-start">
+              <div class="nav-item d-flex align-items-start">
+                <i class="bx bx-search fs-4 lh-0 mt-2"></i><input type="text" class="form-control border-0 shadow-none" placeholder="ຄົ້ນຫາຂໍ້ມູນ..."  v-model="search" @keyup.enter="getDataStore()">
+              </div>
+            </div>
           </div>
           <div class="col-md-6"></div>
         </div>
@@ -154,7 +162,7 @@
           <th>Actions</th>
         </tr>
       </thead>
-      <tbody class="table-border-bottom-0">
+      <tbody class="table-border-bottom-0"> 
         <tr v-for="list in DataStore.data" :key="list.id">
           <td><strong>{{list.id}}</strong></td>
           <td><strong>{{list.name}}</strong></td>
@@ -249,6 +257,13 @@ export default {
              this.$axios.get("/sanctum/csrf-cookie").then((response)=>{
 
                     this.$axios.post(`/api/store/update/${this.EditID}`,FormDataStore).then((response)=>{
+                      this.$swal({
+                          position: 'top-center',
+                          icon: 'success',
+                          title: response.data.message,
+                          showConfirmButton: false,
+                          timer: 2000
+                        });
                     // console.log("Update Data Successfully");
                     this.getDataStore();
                   }).catch((error)=>{
@@ -275,7 +290,13 @@ export default {
             FormDataStore.append("prices_sell",this.FormData.prices_sell);
             this.$axios.get("/sanctum/csrf-cookie").then((response)=>{
               this.$axios.post("/api/store/add",FormDataStore).then((response)=>{
-                            // console.log("Send Data Successfully");
+                this.$swal({
+                      position: 'top-center',
+                      icon: 'success',
+                      title: response.data.message,
+                      showConfirmButton: false,
+                      timer: 2000
+                    });
                   this.getDataStore();
                 }).catch((error)=>{
                   console.log(error);

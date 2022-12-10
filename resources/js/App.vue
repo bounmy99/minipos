@@ -96,27 +96,27 @@
                         <ul class="menu-sub" :class="MainM1">
 
                             <li class="menu-item" :class="SubM1_01">
-                                <router-link to="/item_1" class="menu-link" @click="MainM1='active',MainM4='',MainM3='', MainM2='', fmenu1(1)">
+                                <router-link to="javascript:void(0);" class="menu-link" @click="MainM1='active',MainM4='',MainM3='', MainM2='', fmenu1(1)">
                                     <div data-i18n="Without menu">ລາຍການທີ1</div>
                                 </router-link>
                             </li>
                             <li class="menu-item" :class="SubM1_02">
-                                <router-link to="/item_2" class="menu-link" @click="MainM1='active',MainM4='',MainM3='', MainM2='', fmenu1(2)">
+                                <router-link to="javascript:void(0);" class="menu-link" @click="MainM1='active',MainM4='',MainM3='', MainM2='', fmenu1(2)">
                                     <div data-i18n="Without navbar">ລາຍການທີ2</div>
                                 </router-link>
                             </li>
                             <li class="menu-item" :class="SubM1_03">
-                                <router-link to="/item_3" class="menu-link" @click="MainM1='active',MainM4='',MainM3='', MainM2='', fmenu1(3)">
+                                <router-link to="javascript:void(0);" class="menu-link" @click="MainM1='active',MainM4='',MainM3='', MainM2='', fmenu1(3)">
                                     <div data-i18n="Container">ລາຍການທີ3</div>
                                 </router-link>
                             </li>
                             <li class="menu-item" :class="SubM1_04">
-                                <router-link to="/item_4" class="menu-link" @click="MainM1='active',MainM4='',MainM3='', MainM2='', fmenu1(4)">
+                                <router-link to="javascript:void(0);" class="menu-link" @click="MainM1='active',MainM4='',MainM3='', MainM2='', fmenu1(4)">
                                     <div data-i18n="Fluid">ລາຍການທີ4</div>
                                 </router-link>
                             </li>
                             <li class="menu-item" :class="SubM1_05">
-                                <router-link to="/item_5" class="menu-link" @click="MainM1='active',MainM4='',MainM3='', MainM2='', fmenu1(5)">
+                                <router-link to="javascript:void(0);" class="menu-link" @click="MainM1='active',MainM4='',MainM3='', MainM2='', fmenu1(5)">
                                     <div data-i18n="Blank">ລາຍການທີ5</div>
                                 </router-link>
                             </li>
@@ -536,20 +536,39 @@ export default {
         },
 
         logout(){
-        this.$axios.post("/api/logout").then((response)=>{
+
+            this.$swal({
+              title: 'ທ່ານຕ້ອງການອອກຈາກລະບົບແທ້ບໍ່?',
+            //   text: "ທ່ານຈະບໍ່ສາມາດກູ້ຄືນຂໍ້ມູນອັນນີ້ໄດ້ເມື່ອລົບໄປແລ້ວ!",
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: 'ຕົກລົງ',
+              cancelButtonText: 'ປະຕິເສດ'
+            }).then((result) => {
+
+              if (result.isConfirmed) {
+                this.$axios.get("/sanctum/csrf-cookie").then((response)=>{
+                    this.$axios.post("/api/logout").then((response)=>{
 
                         if(response.data.success){
                             window.location.href="/login"
                         }
-                    }).catch((error)=>{
+                        }).catch((error)=>{
                         console.log(error);
-                    });
+                        });
+                });
+                
+              }
+            });
+       
     }
         
 
       
     },
-
+//ກອດສອບການເຂົ້າສູ່ລະບົບ
     created(){
 
         console.log(window.Laravel.isLoggin);
