@@ -113,8 +113,8 @@
       <div class="row card-body" v-if="FormShow">
       <!-- <h5 class="card-header">Default</h5> -->
       <div class="col-md-4">
-          <label for="defaultFormControlInput" class="form-label">ຊື່ສີ້ນຄ້າ</label>
-          <input type="text" class="form-control" id="" placeholder="John Doe" >
+          <img :src="image_preview" alt="" style="width:100%"  >
+          <input type="file" class="form-control mt-2" id="" @change="onSelected">
       </div>
     <div class="col-md-8">
         <div>
@@ -193,6 +193,8 @@ export default {
 
     data() {
         return {
+            image_preview:window.location.origin + '/assets/img/images/placeholder.jpg',
+            image_product:'',
             search:'',
             EditID :'',
             FormShow : false,
@@ -225,15 +227,32 @@ export default {
     },
 
     methods: {
+
+      onSelected(event){
+        console.log(event.target.files[0]);
+        this.image_product = event.target.files[0]; // ຟັງຊັນໃນການອ່ານໄຟຮູບພາບ
+        let reader = new FileReader();
+        reader.readAsDataURL(this.image_product);
+        reader.addEventListener("load",function(){ //ຟັງຊັນໃນການ preview ຮູບພາບ
+          this.image_preview = reader.result;
+        }.bind(this),false);
+      },
+      
 // ຟັງຊັນຕົວເລກສຳລັບໃຊ້ສະແດງລາຄາເປັນເງິນ
         formatPrice(value){
           let val = (value / 1).toFixed(0).replace(",", ".");
           return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g,",");      
          },
-
+// ການສະແດງແບບຟອມ
         add_store(){
           this.FormShow = true;
+          this.FormData.name = '' 
+          this.FormData.amount = ''
+          this.FormData.prices_buy = ''
+          this.FormData.prices_sell = ''
+          this.image_preview = window.location.origin + '/assets/img/images/placeholder.jpg';
         },
+// ການຍົກເລີກແບບຟອມ
         cancel(){
           this.FormShow = false;
         },
@@ -254,9 +273,11 @@ export default {
             FormDataStore.append("amount",this.FormData.amount);
             FormDataStore.append("prices_buy",this.FormData.prices_buy);
             FormDataStore.append("prices_sell",this.FormData.prices_sell);
+            FormDataStore.append("file",this.image_product);
+
              this.$axios.get("/sanctum/csrf-cookie").then((response)=>{
 
-                    this.$axios.post(`/api/store/update/${this.EditID}`,FormDataStore).then((response)=>{
+                    this.$axios.post(`/api/store/update/${this.EditID}`,FormDataStore, {headers:{"content-Type":"multipart\form-data"}}).then((response)=>{
                       this.$swal({
                           position: 'top-center',
                           icon: 'success',
@@ -288,8 +309,9 @@ export default {
             FormDataStore.append("amount",this.FormData.amount);
             FormDataStore.append("prices_buy",this.FormData.prices_buy);
             FormDataStore.append("prices_sell",this.FormData.prices_sell);
+            FormDataStore.append("file",this.image_product);
             this.$axios.get("/sanctum/csrf-cookie").then((response)=>{
-              this.$axios.post("/api/store/add",FormDataStore).then((response)=>{
+              this.$axios.post("/api/store/add",FormDataStore,{headers:{"content-Type":"multipart\form-data"}}).then((response)=>{
                 this.$swal({
                       position: 'top-center',
                       icon: 'success',
@@ -329,6 +351,15 @@ export default {
                       this.FormData.amount = response.data.amount 
                       this.FormData.prices_buy = response.data.prices_buy
                       this.FormData.prices_sell = response.data.prices_sell
+//ກຳນົດຄ່າໃຫ້ຮູບພາບ  
+                      this.image_product = response.data.image;
+
+                      if(response.data.image){
+                          this.image_preview = window.location.origin + '/assets/img/images/' + response.data.image;
+                      }else{
+                          this.image_preview = window.location.origin + '/assets/img/images/placeholder.jpg';
+                      }
+
                     }).catch((error)=>{
                       console.log(error)
                     });
@@ -413,5 +444,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
 
 </style>

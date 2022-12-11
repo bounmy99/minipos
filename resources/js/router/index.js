@@ -9,7 +9,7 @@ import transfer from "../Pages/transfer.vue";
 
 export const routes = [
     {
-        name : "Login page",
+        name : "Login page1",
         path : "/",
         component : Login,
     },
