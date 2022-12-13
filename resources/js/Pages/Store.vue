@@ -117,6 +117,12 @@
           <input type="file" class="form-control mt-2" id="" @change="onSelected">
       </div>
     <div class="col-md-8">
+            <div class="alert alert-danger alert-dismissible" role="alert" v-if="show_error">
+                <i class="bx bx-info-circle fs-20"></i>
+            {{ text_error }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+            </button>
+            </div>
         <div>
           <label for="defaultFormControlInput" class="form-label">ຊື່ສີ້ນຄ້າ</label>
           <input type="text" class="form-control" id="" placeholder="ກະລຸນາປ້ອນຊື່ສີ້ນຄ້າ " v-model="FormData.name" >
@@ -155,6 +161,7 @@
       <thead>
         <tr>
           <th>ລະຫັດ</th>
+          <th class="text-center">ຮູບພາບ</th>
           <th>ຊື່ສີ້ນຄ້າ</th>
           <th>ຈຳນວນ</th>
           <th>ລາຄາຊື້</th>
@@ -165,6 +172,10 @@
       <tbody class="table-border-bottom-0"> 
         <tr v-for="list in DataStore.data" :key="list.id">
           <td><strong>{{list.id}}</strong></td>
+          <td>
+            <img class="card-img-top .img_cover" :src="('assets/img/images/'+list.image )" alt="Card image cap" v-if="list.image" style="width:40px;height:40">
+            <img class="card-img-top .img_cover" :src="('assets/img/images/no_image.jpg')" alt="Card image cap" v-if="!list.image" style="width:40px;height:40">
+          </td>
           <td><strong>{{list.name}}</strong></td>
           <td><strong>{{list.amount}}</strong></td>
           <td><strong>{{formatPrice(list.prices_buy)}}</strong></td>
@@ -193,6 +204,8 @@ export default {
 
     data() {
         return {
+            show_error: false,
+            text_error:'',
             image_preview:window.location.origin + '/assets/img/images/placeholder.jpg',
             image_product:'',
             search:'',
@@ -227,7 +240,6 @@ export default {
     },
 
     methods: {
-
       onSelected(event){
         console.log(event.target.files[0]);
         this.image_product = event.target.files[0]; // ຟັງຊັນໃນການອ່ານໄຟຮູບພາບ
@@ -255,10 +267,22 @@ export default {
 // ການຍົກເລີກແບບຟອມ
         cancel(){
           this.FormShow = false;
+          this.show_error = false;
         },
 
 // saving data
         save_Data(){
+
+           
+          if(this.FormData.name==''||this.image_product==''||this.FormData.amount==''||this.FormData.prices_buy==''||this.FormData.prices_sell==''){
+            
+            this.show_error = true;
+            this.text_error = "ກະລຸນາປ້ອນຂໍ້ມູນໃຫ້ຄົນຖ້ວນ";
+
+          }else{
+            
+            this.show_error = false;
+            this.text_error = ""; 
 
           if(this.FormType){ // if variable FormType have values is true
 // save edit data
@@ -268,6 +292,8 @@ export default {
           // this.DataStore.find((i)=>i.id == this.EditID).prices_sell = this.FormData.prices_sell;
 
 //shoot data to backend by axios to update data
+        
+
           let FormDataStore = new FormData();
             FormDataStore.append("name",this.FormData.name);
             FormDataStore.append("amount",this.FormData.amount);
@@ -290,7 +316,7 @@ export default {
                   }).catch((error)=>{
                     console.log(error);
                   });
-            });
+               });
             
           }else{// if variable FormType have values is false
 // add new data
@@ -304,6 +330,9 @@ export default {
           // });
 
 //shoot data to backend by axios
+       
+
+
             let FormDataStore = new FormData();
             FormDataStore.append("name",this.FormData.name);
             FormDataStore.append("amount",this.FormData.amount);
@@ -325,7 +354,8 @@ export default {
                 });
             });
             
-}
+       }
+    
 // clear data input form
             this.FormData.name = '' 
             this.FormData.amount = ''
@@ -335,7 +365,8 @@ export default {
             this.FormShow = false;
 // when save data status is false
             this.FormType = false;
-        },
+      }
+    },
 // edit data
         edit_store(id){
 // recieve id from form
@@ -345,6 +376,7 @@ export default {
 //ການຫາ ID ໃນກ້ອນຂໍ້ມູນ
 //         let item = this.DataStore.find((i)=>i.id == id); 
 //ການຫາ ID ໃນຖານຂໍ້ມູນ
+
           this.$axios.get("/sanctum/csrf-cookie").then((response)=>{
                   this.$axios.get(`api/store/edit/${id}`).then((response)=>{
                       this.FormData.name = response.data.name 
@@ -364,7 +396,7 @@ export default {
                       console.log(error)
                     });
           });
-            
+        
  //ການບັນທຶກການແກ້ໄຂໃນກ້ອນຂໍ້ມູນ           
         //  this.FormData.name = item.name 
         //  this.FormData.amount = item.amount 
