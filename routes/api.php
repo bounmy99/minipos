@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\TransitionController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -30,4 +31,12 @@ Route::get('/',[StoreController::class,'index']);
 Route::get('edit/{id}',[StoreController::class,'edit']);
 Route::post('update/{id}',[StoreController::class,'update']);
 Route::delete('delete/{id}',[StoreController::class,'delete']);
+});
+
+Route::group(['prefix'=>'transition','middleware'=>'auth:sanctum'],function(){
+Route::post('add',[TransitionController::class,'add']);
+// Route::get('/',[StoreController::class,'index']);
+// Route::get('edit/{id}',[StoreController::class,'edit']);
+// Route::post('update/{id}',[StoreController::class,'update']);
+// Route::delete('delete/{id}',[StoreController::class,'delete']);
 });

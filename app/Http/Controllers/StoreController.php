@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Store;
+use App\Models\Transition;
 use Intervention\Image\Facades\Image;
 class StoreController extends Controller
 {
@@ -44,12 +45,46 @@ class StoreController extends Controller
             $store->prices_buy = $Request->prices_buy;
             $store->prices_sell = $Request->prices_sell;
             $store->save();
+            
+            $product_id_new = $store->id;
+
+
+            // ບັນທຶກ ລາຍຈ່າຍ ສັ່ງຊື້ສິນຄ້າ
+            $number = 1;
+            $tran = Transition::all()->sortByDesc('id')->take(1)->toArray();
+
+            foreach($tran as $new){
+                $number = $new["tran_id"];
+            }
+            // ຕົວຢ່າງ INC00001
+            if($number !=''){
+                $number1 = str_replace("INC","",$number); // 00001
+                $number2 = str_replace("EXP","",$number1);
+                $number3 = (int)$number2+1; // 1+1 = 2
+                $length = 5;
+                $number = substr(str_repeat(0,$length).$number3, - $length); //00002
+            }
+
+            if($Request->acc_type == "income") {
+                $tnum = "INC";
+            } elseif($Request->acc_type == "expense") {
+                $tnum = "EXP";
+            }
+
+            $trans = new Transition();
+            $trans->tran_id = $tnum.$number;
+            $trans->product_id = $product_id_new;
+            $trans->tran_type = $Request->acc_type;
+            $trans->tran_detail = "ນຳເຂົ້າສິນຄ້າໃໝ່ ".$Request->name;
+            $trans->amount = $Request->amount;
+            $trans->price = $Request->amount * $Request->prices_buy;
+            $trans->save();
 
             $success = true;
             $message ="ບັນທຶກຂໍ້ມູນສຳເລັດ";
         }catch(\illuminate\Database\QueryException $ex){
             $success = false;
-            $message = $ex->geMessage;
+            $message = $ex->getMessage; 
         }
 
         $response = [

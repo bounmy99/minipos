@@ -20020,21 +20020,179 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       search: '',
-      DataStore: []
+      CrashRecive: '',
+      CrashBack: '',
+      DataStore: [],
+      ListOrder: [],
+      options: {
+        //prefix: '₭ ',
+        numeral: true,
+        numeralPositiveOnly: true,
+        noImmediatePrefix: true,
+        rawValueTrimPrefix: true,
+        numeralIntegerScale: 10,
+        numeralDecimalScale: 2,
+        numeralDecimalMark: '.',
+        delimiter: ','
+      }
     };
   },
   mounted: function mounted() {},
+  computed: {
+    CrashBack: function CrashBack() {
+      return this.CrashRecive - this.TotalAmount;
+    },
+    TotalAmount: function TotalAmount() {
+      return this.ListOrder.reduce(function (num, list_item) {
+        return num + list_item.prices_sell * list_item.order_amount;
+      }, 0);
+    },
+    CheckBtnPay: function CheckBtnPay() {
+      if (this.TotalAmount > 0) {
+        return false;
+      } else {
+        return true;
+      }
+    },
+    CheckConfirmPay: function CheckConfirmPay() {
+      if (this.TotalAmount <= this.CrashRecive) {
+        return false;
+      } else {
+        return true;
+      }
+    }
+  },
   methods: {
+    ConfirmPay: function ConfirmPay() {
+      var _this = this;
+      this.$axios.get("/sanctum/csrf-cookie").then(function (response) {
+        _this.$axios.post('/api/transition/add/', {
+          acc_type: "income",
+          ListOrder: _this.ListOrder
+        }).then(function (response) {
+          $("#modalCenter").modal("hide"); //ປິດແບບຟອມຫຼັງຈາກບັນທຶກແລ້ວ
+          _this.ListOrder = []; //ລ້າງລາຍການຫຼັງຈາກຊຳລະ
+          _this.CrashRecive = ""; //ລ້າງຂໍ້ມູນຫຼັງຈາກຢືນຢັນ
+          _this.getDataStore(); //ອັບເດດການສັ່ງຊື້
+
+          if (response.data.success) {
+            _this.$swal({
+              position: 'top-center',
+              icon: 'success',
+              title: response.data.message,
+              showConfirmButton: false,
+              timer: 2000
+            });
+          }
+          // this.getDataStore();
+        })["catch"](function (error) {
+          console.log(error);
+        });
+      });
+    },
+    AddNum: function AddNum(num) {
+      // console.log(num);
+      if (num == '-') {
+        this.CrashRecive = this.CrashRecive.slice(0, -1);
+      } else {
+        this.CrashRecive = this.CrashRecive + num;
+      }
+    },
+    //ການສະແດງແບບຟອມຢືນຢັນການຊຳລະ
+    BTN_Play: function BTN_Play() {
+      $("#modalCenter").modal("show");
+    },
+    add_amount: function add_amount(id) {
+      this.ListOrder.find(function (i) {
+        return i.id == id;
+      }).order_amount--;
+      var item = this.ListOrder.find(function (i) {
+        return i.id == id;
+      }).order_amount;
+      if (item < 1) {
+        //console.log(item);
+        this.ListOrder.splice(this.ListOrder.map(function (i) {
+          return i.id;
+        }).indexOf(id), 1);
+      }
+    },
+    // del_amount(id){
+    //     this.ListOrder.find((i) => i.id == id).order_amount++;
+    // },
+    del: function del(id) {
+      this.ListOrder.splice(this.ListOrder.map(function (i) {
+        return i.id;
+      }).indexOf(id), 1);
+    },
+    del_all: function del_all() {
+      this.ListOrder = [];
+    },
+    add_product: function add_product(id) {
+      var Item = this.DataStore.data.find(function (i) {
+        return i.id == id;
+      });
+      if (Item.amount > 0) {
+        //ກວດສອບສີ້ນຄ້າຄ້າງສະຕັອກ
+
+        var list_order = this.ListOrder.find(function (i) {
+          return i.id == id;
+        });
+        if (list_order) {
+          //ກວດສອບລາຍການສັ່ງຊື້ ວ່າມີລະຫັດທີ່ຕ້ອງການສັ່ງໍື້ບໍ່
+
+          var old_order_amount = list_order.order_amount;
+          if (Item.amount - old_order_amount > 0) {
+            //ກວດສອບລາຍການສີ້ນຄ້າກັບລາຍການສັ່ງຊື້ວ່າມີສີ້ນຄ້າທີ່ຈະສັ່ງຊື້ບໍ່
+
+            if (this.ListOrder.find(function (i) {
+              return i.id == id;
+            })) {
+              //ກວດສອບການເພີ່ນຈຳນວນສີ້ນຄ້າ
+              this.ListOrder.find(function (i) {
+                return i.id == id;
+              }).order_amount++;
+            } else {
+              this.ListOrder.push({
+                id: Item.id,
+                name: Item.name,
+                prices_sell: Item.prices_sell,
+                order_amount: 1
+              });
+            }
+          } else {
+            this.$swal.fire("Warning", "ສີ້ນຄ້າໝົດແລ້ວ", "warning");
+          }
+        } else {
+          //ກວດສອບເພີ່ມສີ້ນຄ້າ
+          if (this.ListOrder.find(function (i) {
+            return i.id == id;
+          })) {
+            this.ListOrder.find(function (i) {
+              return i.id == id;
+            }).order_amount++;
+          } else {
+            this.ListOrder.push({
+              id: Item.id,
+              name: Item.name,
+              prices_sell: Item.prices_sell,
+              order_amount: 1
+            });
+          }
+        }
+      } else {
+        this.$swal.fire("Warning", "ສີ້ນຄ້າໝົດແລ້ວ", "warning");
+      }
+    },
     // ຟັງຊັນຕົວເລກສຳລັບໃຊ້ສະແດງລາຄາເປັນເງິນ
     formatPrice: function formatPrice(value) {
       var val = (value / 1).toFixed(0).replace(",", ".");
       return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     },
     getDataStore: function getDataStore(page) {
-      var _this = this;
+      var _this2 = this;
       this.$axios.get("/sanctum/csrf-cookie").then(function (response) {
-        _this.$axios.get("api/store?page=".concat(page, "&search=").concat(_this.search)).then(function (response) {
-          _this.DataStore = response.data;
+        _this2.$axios.get("api/store?page=".concat(page, "&search=").concat(_this2.search)).then(function (response) {
+          _this2.DataStore = response.data;
         })["catch"](function (error) {
           console.log(error);
         });
@@ -20265,6 +20423,7 @@ __webpack_require__.r(__webpack_exports__);
           _FormDataStore.append("prices_buy", this.FormData.prices_buy);
           _FormDataStore.append("prices_sell", this.FormData.prices_sell);
           _FormDataStore.append("file", this.image_product);
+          _FormDataStore.append("acc_type", "expense");
           this.$axios.get("/sanctum/csrf-cookie").then(function (response) {
             _this.$axios.post("/api/store/add", _FormDataStore, {
               headers: {
@@ -21297,27 +21456,176 @@ var _hoisted_3 = {
   }
 };
 var _hoisted_4 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createStaticVNode)("<nav class=\"layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme\" id=\"layout-navbar\"><div class=\"navbar-nav-right d-flex align-items-center\" id=\"navbar-collapse\"><!-- Search --><div class=\"navbar-nav align-items-center\"><div class=\"nav-item d-flex align-items-center\"><i class=\"bx bx-search fs-4 lh-0\"></i><input type=\"text\" class=\"form-control border-0 shadow-none\" placeholder=\"ຄົ້ນຫາຂໍ້ມູນ...\" aria-label=\"Search...\"></div></div><!-- /Search --></div></nav>", 1);
-var _hoisted_5 = {
-  "class": "card h-100"
+var _hoisted_5 = ["onClick"];
+var _hoisted_6 = {
+  key: 0,
+  "class": "count-product"
 };
-var _hoisted_6 = ["src"];
 var _hoisted_7 = ["src"];
-var _hoisted_8 = {
+var _hoisted_8 = ["src"];
+var _hoisted_9 = {
   "class": "card-body p-2 text-center"
 };
-var _hoisted_9 = {
+var _hoisted_10 = {
   "class": "card-title text-danger"
 };
-var _hoisted_10 = {
+var _hoisted_11 = {
   "class": "card-text text-price"
 };
-var _hoisted_11 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createStaticVNode)("<div class=\"col-md-4\"><div class=\"card h-100 mt-2\"><div class=\"card-body\" style=\"overflow:auto;height:50vh;\"><div class=\"d-flex justify-content-between text-allprice mb-3\"><span>ລວມຍອດເງິນທັງໝົດ</span><span>1000,000 ກີບ</span></div><div><button class=\"btn btn-success d-grid w-100\">ຊຳລະເງິນ</button></div><div class=\"mt-3\"><table class=\"table table-bordered\"><thead><tr><th>ລາຍການ</th><th>ລາຄາ</th><th>ຍອດລວມ</th></tr></thead><tbody><tr><td>a</td><td>b</td><td>c</td></tr><tr><td>a</td><td>b</td><td>c</td></tr><tr><td>a</td><td>b</td><td>c</td></tr></tbody></table></div></div></div></div>", 1);
+var _hoisted_12 = {
+  "class": "col-md-4"
+};
+var _hoisted_13 = {
+  "class": "card h-100 mt-2"
+};
+var _hoisted_14 = {
+  "class": "card-body p-1",
+  style: {
+    "overflow": "auto",
+    "height": "50vh"
+  }
+};
+var _hoisted_15 = {
+  "class": "d-flex justify-content-between text-allprice mb-3"
+};
+var _hoisted_16 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, "ລວມຍອດເງິນທັງໝົດ", -1 /* HOISTED */);
+var _hoisted_17 = ["disabled"];
+var _hoisted_18 = {
+  "class": "mt-3"
+};
+var _hoisted_19 = {
+  "class": "table table-bordered"
+};
+var _hoisted_20 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("thead", null, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("tr", null, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("th", null, "ລາຍການ"), /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("th", null, "ລາຄາ"), /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("th", null, "ຍອດລວມ ")])], -1 /* HOISTED */);
+var _hoisted_21 = {
+  "class": "text-end"
+};
+var _hoisted_22 = ["onClick"];
+var _hoisted_23 = ["onClick"];
+var _hoisted_24 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)();
+var _hoisted_25 = ["onClick"];
+var _hoisted_26 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)();
+var _hoisted_27 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("br", null, null, -1 /* HOISTED */);
+var _hoisted_28 = {
+  "class": "text-end"
+};
+var _hoisted_29 = {
+  "class": "modal fade",
+  id: "modalCenter",
+  tabindex: "-1",
+  style: {
+    "display": "none"
+  },
+  "aria-hidden": "true"
+};
+var _hoisted_30 = {
+  "class": "modal-dialog modal-dialog-centered",
+  role: "document"
+};
+var _hoisted_31 = {
+  "class": "modal-content"
+};
+var _hoisted_32 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+  "class": "modal-header"
+}, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h5", {
+  "class": "modal-title fw-bold text-center",
+  id: "modalCenterTitle"
+}, "ຊຳລະສີ້ນຄ້າ"), /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+  type: "button",
+  "class": "btn-close",
+  "data-bs-dismiss": "modal",
+  "aria-label": "Close"
+})], -1 /* HOISTED */);
+var _hoisted_33 = {
+  "class": "modal-body"
+};
+var _hoisted_34 = {
+  "class": "d-flex justify-content-between text-success"
+};
+var _hoisted_35 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, "ລວມຍອດເງິນ:", -1 /* HOISTED */);
+var _hoisted_36 = {
+  "class": "d-flex justify-content-between text-primary"
+};
+var _hoisted_37 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, "ເງິນທີ່ຮັບນຳລູກຄ້າ:", -1 /* HOISTED */);
+var _hoisted_38 = {
+  key: 0,
+  "class": "d-flex justify-content-between text-danger"
+};
+var _hoisted_39 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, "ເງິນທອນ:", -1 /* HOISTED */);
+var _hoisted_40 = {
+  "class": "p-2 justify-content-center d-flex"
+};
+var _hoisted_41 = {
+  "class": "row",
+  style: {
+    "width": "250px"
+  }
+};
+var _hoisted_42 = {
+  "class": "col-4 text-center mt-2"
+};
+var _hoisted_43 = {
+  "class": "col-4 text-center mt-2"
+};
+var _hoisted_44 = {
+  "class": "col-4 text-center mt-2"
+};
+var _hoisted_45 = {
+  "class": "col-4 text-center mt-2"
+};
+var _hoisted_46 = {
+  "class": "col-4 text-center mt-2"
+};
+var _hoisted_47 = {
+  "class": "col-4 text-center mt-2"
+};
+var _hoisted_48 = {
+  "class": "col-4 text-center mt-2"
+};
+var _hoisted_49 = {
+  "class": "col-4 text-center mt-2"
+};
+var _hoisted_50 = {
+  "class": "col-4 text-center mt-2"
+};
+var _hoisted_51 = {
+  "class": "col-4 text-center mt-2"
+};
+var _hoisted_52 = {
+  "class": "col-4 text-center mt-2"
+};
+var _hoisted_53 = {
+  "class": "col-4 text-center mt-2"
+};
+var _hoisted_54 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("i", {
+  "class": "bx bx-left-arrow-alt"
+}, null, -1 /* HOISTED */);
+var _hoisted_55 = [_hoisted_54];
+var _hoisted_56 = {
+  "class": "modal-footer d-flex justify-content-center"
+};
+var _hoisted_57 = ["disabled"];
+var _hoisted_58 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("i", {
+  "class": "bx bxl-paypal"
+}, null, -1 /* HOISTED */);
+var _hoisted_59 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("ຢືນຢັນການສຳລະ");
+var _hoisted_60 = [_hoisted_58, _hoisted_59];
 function render(_ctx, _cache, $props, $setup, $data, $options) {
+  var _component_cleave = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("cleave");
   return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_2, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_3, [_hoisted_4, ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($data.DataStore.data, function (item) {
     return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
       "class": "col-md-3 col-lg-3 mt-3",
       key: item.id
-    }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_5, [item.image ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("img", {
+    }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+      "class": "card h-100 pointer",
+      onClick: function onClick($event) {
+        return $options.add_product(item.id);
+      }
+    }, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($data.ListOrder, function (li) {
+      return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", {
+        key: li.id
+      }, [item.id == li.id ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_6, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(li.order_amount), 1 /* TEXT */)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]);
+    }), 128 /* KEYED_FRAGMENT */)), item.image ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("img", {
       key: 0,
       "class": "card-img-top .img_cover",
       src: 'assets/img/images/' + item.image,
@@ -21325,13 +21633,158 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       style: {
         "max-height": "fit-content"
       }
-    }, null, 8 /* PROPS */, _hoisted_6)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), !item.image ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("img", {
+    }, null, 8 /* PROPS */, _hoisted_7)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), !item.image ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("img", {
       key: 1,
       "class": "card-img-top .img_cover",
       src: 'assets/img/images/no_image.jpg',
       alt: "Card image cap"
-    }, null, 8 /* PROPS */, _hoisted_7)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_8, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h5", _hoisted_9, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.formatPrice(item.prices_sell)) + " ກີບ", 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_10, "ຊື່: " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(item.name), 1 /* TEXT */)])])]);
-  }), 128 /* KEYED_FRAGMENT */))])]), _hoisted_11])]);
+    }, null, 8 /* PROPS */, _hoisted_8)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_9, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h5", _hoisted_10, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.formatPrice(item.prices_sell)) + " ກີບ", 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_11, "ຊື່: " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(item.name), 1 /* TEXT */)])], 8 /* PROPS */, _hoisted_5)]);
+  }), 128 /* KEYED_FRAGMENT */))])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_12, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_13, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_14, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_15, [_hoisted_16, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.formatPrice($options.TotalAmount)) + " ກີບ", 1 /* TEXT */)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+    "class": "btn btn-success d-grid w-100",
+    disabled: $options.CheckBtnPay,
+    onClick: _cache[0] || (_cache[0] = function ($event) {
+      return $options.BTN_Play();
+    })
+  }, "ຊຳລະເງິນ", 8 /* PROPS */, _hoisted_17), $options.TotalAmount > 0 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("button", {
+    key: 0,
+    "class": "btn btn-danger mt-3 d-grid w-100",
+    onClick: _cache[1] || (_cache[1] = function ($event) {
+      return $options.del_all();
+    })
+  }, "ຍົກເລີກການສັ່ງຊື້")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_18, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("table", _hoisted_19, [_hoisted_20, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("tbody", null, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($data.ListOrder, function (list_item) {
+    return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("tr", {
+      key: list_item.id
+    }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("td", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(list_item.name), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("td", _hoisted_21, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("i", {
+      "class": "bx bx-minus-circle pointer text-info",
+      onClick: function onClick($event) {
+        return $options.add_amount(list_item.id);
+      }
+    }, null, 8 /* PROPS */, _hoisted_22), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(list_item.order_amount) + " ", 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("i", {
+      "class": "bx bx-plus-circle pointer text-info",
+      onClick: function onClick($event) {
+        return $options.add_product(list_item.id);
+      }
+    }, null, 8 /* PROPS */, _hoisted_23), _hoisted_24, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("i", {
+      "class": "bx bx-x-circle pointer text-danger",
+      onClick: function onClick($event) {
+        return $options.del(list_item.id);
+      }
+    }, null, 8 /* PROPS */, _hoisted_25), _hoisted_26, _hoisted_27, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.formatPrice(list_item.prices_sell)), 1 /* TEXT */)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("td", _hoisted_28, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.formatPrice(list_item.order_amount * list_item.prices_sell)), 1 /* TEXT */)]);
+  }), 128 /* KEYED_FRAGMENT */))])])])])])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_29, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_30, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_31, [_hoisted_32, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_33, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h5", _hoisted_34, [_hoisted_35, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.formatPrice($options.TotalAmount)) + " ກີບ", 1 /* TEXT */)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h5", _hoisted_36, [_hoisted_37, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.formatPrice($data.CrashRecive)) + " ກີບ", 1 /* TEXT */)]), $options.CrashBack > 0 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("h5", _hoisted_38, [_hoisted_39, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.formatPrice($options.CrashBack)) + " ກີບ", 1 /* TEXT */)])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_cleave, {
+    options: $data.options,
+    "class": "form-control",
+    modelValue: $data.CrashRecive,
+    "onUpdate:modelValue": _cache[2] || (_cache[2] = function ($event) {
+      return $data.CrashRecive = $event;
+    }),
+    style: {
+      "text-align": "right"
+    }
+  }, null, 8 /* PROPS */, ["options", "modelValue"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_40, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_41, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_42, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
+    onClick: _cache[3] || (_cache[3] = function ($event) {
+      return $options.AddNum(1);
+    }),
+    "class": "btn btn-primary btn-lg text-white",
+    style: {
+      "width": "60px"
+    }
+  }, "1")]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_43, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
+    onClick: _cache[4] || (_cache[4] = function ($event) {
+      return $options.AddNum(2);
+    }),
+    "class": "btn btn-primary btn-lg text-white",
+    style: {
+      "width": "60px"
+    }
+  }, "2")]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_44, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
+    onClick: _cache[5] || (_cache[5] = function ($event) {
+      return $options.AddNum(3);
+    }),
+    "class": "btn btn-primary btn-lg text-white",
+    style: {
+      "width": "60px"
+    }
+  }, "3")]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_45, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
+    onClick: _cache[6] || (_cache[6] = function ($event) {
+      return $options.AddNum(4);
+    }),
+    "class": "btn btn-primary btn-lg text-white",
+    style: {
+      "width": "60px"
+    }
+  }, "4")]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_46, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
+    onClick: _cache[7] || (_cache[7] = function ($event) {
+      return $options.AddNum(5);
+    }),
+    "class": "btn btn-primary btn-lg text-white",
+    style: {
+      "width": "60px"
+    }
+  }, "5")]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_47, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+    onClick: _cache[8] || (_cache[8] = function ($event) {
+      return $options.AddNum(6);
+    }),
+    type: "button",
+    "class": "btn btn-primary btn-lg text-white",
+    style: {
+      "width": "60px"
+    }
+  }, " 6 ")]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_48, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
+    onClick: _cache[9] || (_cache[9] = function ($event) {
+      return $options.AddNum(7);
+    }),
+    "class": "btn btn-primary btn-lg text-white",
+    style: {
+      "width": "60px"
+    }
+  }, "7")]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_49, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
+    onClick: _cache[10] || (_cache[10] = function ($event) {
+      return $options.AddNum(8);
+    }),
+    "class": "btn btn-primary btn-lg text-white",
+    style: {
+      "width": "60px"
+    }
+  }, "8")]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_50, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
+    onClick: _cache[11] || (_cache[11] = function ($event) {
+      return $options.AddNum(9);
+    }),
+    "class": "btn btn-primary btn-lg text-white",
+    style: {
+      "width": "60px"
+    }
+  }, "9")]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_51, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
+    onClick: _cache[12] || (_cache[12] = function ($event) {
+      return $options.AddNum('00');
+    }),
+    "class": "btn btn-primary btn-lg text-white",
+    style: {
+      "width": "60px"
+    }
+  }, "00")]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_52, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
+    onClick: _cache[13] || (_cache[13] = function ($event) {
+      return $options.AddNum(0);
+    }),
+    "class": "btn btn-primary btn-lg text-white",
+    style: {
+      "width": "60px"
+    }
+  }, "0")]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_53, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
+    onClick: _cache[14] || (_cache[14] = function ($event) {
+      return $options.AddNum('-');
+    }),
+    "class": "btn btn-danger btn-lg text-white",
+    style: {
+      "width": "60px"
+    }
+  }, _hoisted_55)])])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_56, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+    type: "button",
+    "class": "btn btn-info",
+    disabled: $options.CheckConfirmPay,
+    onClick: _cache[15] || (_cache[15] = function ($event) {
+      return $options.ConfirmPay();
+    })
+  }, _hoisted_60, 8 /* PROPS */, _hoisted_57)])])])])]);
 }
 
 /***/ }),
@@ -23649,7 +24102,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "\n.text-allprice{\r\n        font-weight: bold;\r\n        color: rgb(19, 133, 148);\n}\n.text-price{\r\n        font-weight: bold;\r\n        color: rgb(41, 215, 238);\n}\n.img_cover{\r\n        width:100%;\r\n        height:140px;\r\n        -o-object-fit:cover;\r\n           object-fit:cover;\r\n        -o-object-position:center;\r\n           object-position:center;\n}\r\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, "\n.text-allprice{\r\n        font-weight: bold;\r\n        color: rgb(19, 133, 148);\n}\n.text-price{\r\n        font-weight: bold;\r\n        color: rgb(41, 215, 238);\n}\n.img_cover{\r\n        width:100%;\r\n        height:140px;\r\n        -o-object-fit:cover;\r\n           object-fit:cover;\r\n        -o-object-position:center;\r\n           object-position:center;\n}\n.count-product{\r\n    position: absolute;\r\n    background-color: blueviolet;\r\n    color: white;\r\n    padding: 5px;\r\n    right: 0px;\r\n    border-radius: 0px 10px 0px 10px;\n}\n.pointer{\r\n        cursor: pointer;\n}\r\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
