@@ -5,6 +5,7 @@ import axios from "axios";
 import Cleave from 'vue-cleave-component';
 import Pagination from "./components/Pagination.vue";
 
+
 import VueSweetalert2 from 'vue-sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 

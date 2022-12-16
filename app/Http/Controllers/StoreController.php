@@ -45,7 +45,7 @@ class StoreController extends Controller
             $store->prices_buy = $Request->prices_buy;
             $store->prices_sell = $Request->prices_sell;
             $store->save();
-            
+
             $product_id_new = $store->id;
 
 
@@ -77,7 +77,7 @@ class StoreController extends Controller
             $trans->tran_type = $Request->acc_type;
             $trans->tran_detail = "ນຳເຂົ້າສິນຄ້າໃໝ່ ".$Request->name;
             $trans->amount = $Request->amount;
-            $trans->price = $Request->amount * $Request->prices_buy;
+            $trans->prices = $Request->amount * $Request->prices_buy;
             $trans->save();
 
             $success = true;

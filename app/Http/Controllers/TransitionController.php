@@ -8,7 +8,48 @@ use App\Models\Store;
 use SNMP;
 
 class TransitionController extends Controller
-{
+{   
+    public function index(Request $request){
+
+        $month_type = $request->month_type;
+        $date = $request->dmy;
+
+        if($date==''){
+
+            $Trans = Transition::orderBy("created_at","desc")
+                    ->paginate(5)
+                    ->toArray();
+                    return array_reverse($Trans);
+        }else{
+            $d = explode("-",$date)[2];
+            $m = explode("-",$date)[1];
+            $y = explode("-",$date)[0];
+
+            if($month_type=="d"){
+                $Trans = Transition::orderBy("created_at","desc")
+                    ->whereYear("created_at","=",$y)
+                    ->whereMonth("created_at","=",$m)
+                    ->whereDay("created_at","=",$d)
+                    ->paginate(5)
+                    ->toArray();
+                    return array_reverse($Trans);
+            }else if($month_type=="m"){
+                $Trans = Transition::orderBy("created_at","desc")
+                    ->whereYear("created_at","=",$y)
+                    ->whereMonth("created_at","=",$m)
+                    ->paginate(5)
+                    ->toArray();
+                    return array_reverse($Trans);
+            }else{
+                $Trans = Transition::orderBy("created_at","desc")
+                    ->whereYear("created_at","=",$y)
+                    ->paginate(5)
+                    ->toArray();
+                    return array_reverse($Trans);
+            }
+        } 
+    }
+
     public function add(Request $request){
         // return $request->ListOrder;
         try{
