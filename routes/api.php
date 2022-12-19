@@ -41,4 +41,5 @@ Route::post('/',[TransitionController::class,'index']);
 
 Route::group(['prefix'=>'report','middleware'=>'auth:sanctum'],function(){
     Route::post('/',[RepotController::class,'index']);
+    Route::get('/dash',[RepotController::class,'dash']);
 });

@@ -3,16 +3,15 @@
         <div class="row">
             <div class="col-md-8" >
                 <div class="row mb-3 g-2" style="overflow:auto;height:85vh;">
-                <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme" id="layout-navbar">
+                <!-- <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme" id="layout-navbar">
                     <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
-                        <!-- Search -->
                         <div class="navbar-nav align-items-center">
                             <div class="nav-item d-flex align-items-center">
                                 <i class="bx bx-search fs-4 lh-0"></i><input type="text" class="form-control border-0 shadow-none" placeholder="ຄົ້ນຫາຂໍ້ມູນ..." aria-label="Search...">
                             </div>
-                        </div><!-- /Search -->
+                        </div>
                     </div>
-                </nav>
+                </nav> -->
                     <div class="col-md-3 col-lg-3  mt-3" v-for="item in DataStore.data" :key="item.id">
                         <div class="card h-100 pointer" @click="add_product(item.id)">
                             <span v-for="li in ListOrder" :key="li.id">

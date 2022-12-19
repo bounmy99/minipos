@@ -125,7 +125,11 @@ export default {
                                     timer: 3000
                                 })
 
-                            window.location.href = "/store";
+                                this.email = '';
+                                this.password = '';
+
+                                window.location.href = "/store";
+                                location.reload();
 
                         }else{
                         this.$swal({

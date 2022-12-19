@@ -1,102 +1,5 @@
 <template>
-<div class="row">
-  <div class="col-md-3 col-lg-3 order-2 mb-4">
-    <div class="card h-100">
-      <div class="card-header d-flex align-items-center justify-content-between">
-        <h5 class="card-title m-0 me-2">ລາຍຮັບ</h5>
-      </div>
-           <div class="card-body">
-                <ul class="p-0 m-0">
-                    <li class="d-flex">
-                    <div class="d-flex w-100 flex-wrap align-items-center justify-content-between">
-                        <i class="menu-icon bx bx-line-chart"></i>
-                        <div class="user-progress d-flex align-items-center gap-1">
-                        <h6 class="mb-0">12,000,000</h6> <span class="text-muted">ກີບ</span>
-                        </div>
-                    </div>
-                    </li>
-                    <li class="d-flex">
-                    <div class="d-flex w-100 flex-wrap align-items-center justify-content-between mt-2" >
-                        <h6 class="mb-0">Monthly Incom</h6> <span class="text-muted">50%</span>
-                    </div>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-  <div class="col-md-3 col-lg-3 order-2 mb-4">
-    <div class="card h-100">
-      <div class="card-header d-flex align-items-center justify-content-between">
-        <h5 class="card-title m-0 me-2">ລາຍຈ່າຍ</h5>
-      </div>
-           <div class="card-body">
-            <ul class="p-0 m-0">
-                    <li class="d-flex">
-                    <div class="d-flex w-100 flex-wrap align-items-center justify-content-between">
-                        <i class="menu-icon bx bx-line-chart"></i>
-                        <div class="user-progress d-flex align-items-center gap-1">
-                        <h6 class="mb-0">12,000,000</h6> <span class="text-muted">ກີບ</span>
-                        </div>
-                    </div>
-                    </li>
-                    <li class="d-flex">
-                    <div class="d-flex w-100 flex-wrap align-items-center justify-content-between mt-2" >
-                        <h6 class="mb-0">Monthly Expens</h6> <span class="text-muted">50%</span>
-                    </div>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-  <div class="col-md-3 col-lg-3 order-2 mb-4">
-    <div class="card h-100">
-      <div class="card-header d-flex align-items-center justify-content-between">
-        <h5 class="card-title m-0 me-2">ກຳໄລ</h5>
-      </div>
-           <div class="card-body">
-            <ul class="p-0 m-0">
-                    <li class="d-flex">
-                    <div class="d-flex w-100 flex-wrap align-items-center justify-content-between">
-                        <i class="menu-icon bx bx-line-chart"></i>
-                        <div class="user-progress d-flex align-items-center gap-1">
-                        <h6 class="mb-0">12,000,000</h6> <span class="text-muted">ກີບ</span>
-                        </div>
-                    </div>
-                    </li>
-                    <li class="d-flex">
-                    <div class="d-flex w-100 flex-wrap align-items-center justify-content-between mt-2" >
-                        <h6 class="mb-0">Monthly Profit</h6> <span class="text-muted">50%</span>
-                    </div>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-  <div class="col-md-3 col-lg-3 order-2 mb-4">
-    <div class="card h-100">
-      <div class="card-header d-flex align-items-center justify-content-between">
-        <h5 class="card-title m-0 me-2">ສະຕ໋ອກ</h5>
-      </div>
-           <div class="card-body">
-            <ul class="p-0 m-0">
-                    <li class="d-flex">
-                    <div class="d-flex w-100 flex-wrap align-items-center justify-content-between">
-                        <i class="menu-icon bx bx-line-chart"></i>
-                        <div class="user-progress d-flex align-items-center gap-1">
-                        <h6 class="mb-0">12,000,000</h6> <span class="text-muted">ລາຍການ</span>
-                        </div>
-                    </div>
-                    </li>
-                    <li class="d-flex">
-                    <div class="d-flex w-100 flex-wrap align-items-center justify-content-between mt-2" >
-                        <h6 class="mb-0">Monthly Store</h6> <span class="text-muted">75,65</span>
-                    </div>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
+       <Nav_dash/>
     <!-- table -->
 
     <div class="card">
@@ -204,6 +107,7 @@ export default {
 
     data() {
         return {
+
             show_error: false,
             text_error:'',
             image_preview:window.location.origin + '/assets/img/images/placeholder.jpg',
@@ -231,7 +135,8 @@ export default {
                     numeralDecimalMark:'.',
                     delimiter:','
 
-                }
+                },
+
         };
     },
 
@@ -461,9 +366,11 @@ export default {
     },
     created(){
       this.getDataStore();
+      console.log('store:'+window.Laravel.isLoggin);
     },
 
     beforeRouteEnter (to, from, next) {
+    
       if(window.Laravel.isLoggin){
           next();
       }else{

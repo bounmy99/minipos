@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Transition;
+use App\Models\Store;
 
 class RepotController extends Controller
 {
@@ -55,5 +56,21 @@ class RepotController extends Controller
         ];
 
         return response()->json($response);
+        
+    }
+    
+    public function dash(){
+        
+            $income = Transition::where("tran_type","income")->get();
+            $expense = Transition::where("tran_type","expense")->get();
+            $store = Store::where("amount","!=","0")->get();
+
+            $response = [
+                'income'=> $income,
+                'expense'=> $expense,
+                'store'=> $store
+            ];
+    
+            return response()->json($response);
     }
 }
