@@ -61,7 +61,9 @@
           <div class="col-md-6"></div>
         </div>
     <table class="table table-hover table-bordered">
+
       <thead>
+        
         <tr>
           <th>ລະຫັດ</th>
           <th class="text-center">ຮູບພາບ</th>
@@ -72,8 +74,8 @@
           <th>Actions</th>
         </tr>
       </thead>
-      <tbody class="table-border-bottom-0"> 
-        <tr v-for="list in DataStore.data" :key="list.id">
+      <tbody class="table-border-bottom-0" > 
+        <tr v-for="list in DataStore.data" :key="list.id" >
           <td><strong>{{list.id}}</strong></td>
           <td>
             <img class="card-img-top .img_cover" :src="('assets/img/images/'+list.image )" alt="Card image cap" v-if="list.image" style="width:40px;height:40">
@@ -93,6 +95,9 @@
             </div>
           </td>
         </tr>
+          <tr v-if="DataStore.data.length <= 0" class="text-center">
+            <td colspan="7">ບໍ່ມີຂໍ້ມູນ</td>
+          </tr>
       </tbody>
     </table>
     <pagination :pagination="DataStore" :offset="4" @paginate="getDataStore($event)" />
@@ -366,7 +371,6 @@ export default {
     },
     created(){
       this.getDataStore();
-      console.log('store:'+window.Laravel.isLoggin);
     },
 
     beforeRouteEnter (to, from, next) {

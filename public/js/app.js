@@ -20550,7 +20550,6 @@ __webpack_require__.r(__webpack_exports__);
   },
   created: function created() {
     this.getDataStore();
-    console.log('store:' + window.Laravel.isLoggin);
   },
   beforeRouteEnter: function beforeRouteEnter(to, from, next) {
     if (window.Laravel.isLoggin) {
@@ -22496,6 +22495,14 @@ var _hoisted_53 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElement
 }, null, -1 /* HOISTED */);
 var _hoisted_54 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" ລົບ");
 var _hoisted_55 = [_hoisted_53, _hoisted_54];
+var _hoisted_56 = {
+  key: 0,
+  "class": "text-center"
+};
+var _hoisted_57 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("td", {
+  colspan: "7"
+}, "ບໍ່ມີຂໍ້ມູນ", -1 /* HOISTED */);
+var _hoisted_58 = [_hoisted_57];
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_Nav_dash = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("Nav_dash");
   var _component_cleave = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("cleave");
@@ -22614,7 +22621,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         return $options.del_store(list.id);
       }
     }, _hoisted_55, 8 /* PROPS */, _hoisted_52)])])])]);
-  }), 128 /* KEYED_FRAGMENT */))])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_pagination, {
+  }), 128 /* KEYED_FRAGMENT */)), $data.DataStore.data.length <= 0 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("tr", _hoisted_56, _hoisted_58)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_pagination, {
     pagination: $data.DataStore,
     offset: 4,
     onPaginate: _cache[10] || (_cache[10] = function ($event) {
