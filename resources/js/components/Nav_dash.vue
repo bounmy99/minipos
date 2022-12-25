@@ -136,6 +136,7 @@ export default {
         Getdata(){
             this.$axios.get("/sanctum/csrf-cookie").then((response)=>{
                 this.$axios.get(`api/report/dash`).then((response)=>{
+                  
                     this.data_income = response.data.income;
                     this.data_expense = response.data.expense;
                     this.data_store = response.data.store;

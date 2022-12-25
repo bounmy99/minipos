@@ -61,6 +61,12 @@
     <!-- beautify ignore:end -->
 
     <link rel="stylesheet" href="{{ mix('css/app.css') }}" type="text/css">
+
+    <style>
+        body{
+            font-family: phetsarath OT;
+        }
+    </style>
 </head>
 <body>
     @if(Auth::check())

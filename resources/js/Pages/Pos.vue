@@ -3,15 +3,16 @@
         <div class="row">
             <div class="col-md-8" >
                 <div class="row mb-3 g-2" style="overflow:auto;height:85vh;">
-                <!-- <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme" id="layout-navbar">
+                <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme" id="layout-navbar">
                     <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
                         <div class="navbar-nav align-items-center">
                             <div class="nav-item d-flex align-items-center">
-                                <i class="bx bx-search fs-4 lh-0"></i><input type="text" class="form-control border-0 shadow-none" placeholder="ຄົ້ນຫາຂໍ້ມູນ..." aria-label="Search...">
+                                <i class="bx bx-search fs-4 lh-0"></i>
+                                <input type="text" class="form-control border-0 shadow-none" style="width:550px;" placeholder="ຄົ້ນຫາຂໍ້ມູນ..." aria-label="Search..." v-model="search" @keyup.enter="getDataStore()">
                             </div>
                         </div>
                     </div>
-                </nav> -->
+                </nav>
                     <div class="col-md-3 col-lg-3  mt-3" v-for="item in DataStore.data" :key="item.id">
                         <div class="card h-100 pointer" @click="add_product(item.id)">
                             <span v-for="li in ListOrder" :key="li.id">
@@ -27,6 +28,9 @@
                         </div>
                         </div>
                     </div>
+                    <div v-if="DataStore.data.length <= 0" class="text-center">
+                      <h3>ບໍ່ມີຂໍ້ມູນທີ່ຄົ້ນຫາ</h3>
+                    </div>
                 </div>
             </div>
             <div class="col-md-4">
@@ -38,7 +42,7 @@
                             </div>
                             <div>
                                 <button class="btn btn-success d-grid w-100" :disabled="CheckBtnPay"   @click="BTN_Play()" >ຊຳລະເງິນ</button>
-                                <button class="btn btn-danger mt-3 d-grid w-100" v-if="TotalAmount > 0" @click="del_all()">ຍົກເລີກການສັ່ງຊື້</button>
+                                <button class="btn btn-danger mt-3 d-grid w-100" v-if="TotalAmount > 0" @click="del_all()">ຍົກເລີກລາຍການສັ່ງຊື້ທັງໝົດ</button>
                             </div>
                             <div class="mt-3">
                                 <table class="table table-bordered">
@@ -214,6 +218,7 @@ export default {
     mounted() {
         
     },
+    
     computed:{
         CrashBack(){
             return this.CrashRecive - this.TotalAmount
@@ -370,18 +375,25 @@ export default {
      
     },
 
-
+    watch:{
+      "search"(){
+        if(this.search==''){
+          this.getDataStore();
+        }
+      }
+    },
     created(){
       this.getDataStore();
     },
 
-    beforeRouteEnter (to, from, next) {
-      if(window.Laravel.isLoggin){
-          next();
-      }else{
-          window.location.href ="/login"
-      }
-    }
+    // beforeRouteEnter (to, from, next) {
+    //   if(window.Laravel.isLoggin){
+    //       next();
+    //   }else{
+    //        window.location.href ="/login"
+    //      // location.reload();
+    //   }
+    // }
        
 };
 </script>

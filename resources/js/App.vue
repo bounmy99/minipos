@@ -267,7 +267,7 @@
                                         <div class="dropdown-divider"></div>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="javascript:void(0);" @click="logout()">
+                                        <a class="dropdown-item" href="javascript:void(0);" @click="logout">
                                             <i class="bx bx-power-off me-2"></i>
                                             <span class="align-middle">Log Out</span>
                                         </a>
@@ -288,12 +288,14 @@
 
                 <!-- Content wrapper -->
                 <div class="content-wrapper">
+                    
 
                     <!-- Content -->
-
                     <div class="container-xxl flex-grow-1 container-p-y">
                         <router-view></router-view>
                     </div>
+
+
                     <!-- / Content -->
                     <!-- Footer -->
                     <footer class="content-footer footer bg-footer-theme" v-if="isLoggin">
@@ -518,8 +520,8 @@ export default {
             }
         },
 
-        logout(){
-
+        logout(e){
+            e.preventDefault();
             this.$swal({
               title: 'ທ່ານຕ້ອງການອອກຈາກລະບົບແທ້ບໍ່?',
             //   text: "ທ່ານຈະບໍ່ສາມາດກູ້ຄືນຂໍ້ມູນອັນນີ້ໄດ້ເມື່ອລົບໄປແລ້ວ!",
@@ -536,11 +538,17 @@ export default {
                     this.$axios.post("/api/logout").then((response)=>{
 
                         if(response.data.success){
-                            window.location.href="/login";
-                            location.reload();
+                            // this.$router.replace();
+                            // window.location.href="/login";
+                            // window.location.href = window.location.href.replace(/#.*$/,'');
+                            // location.reload();
+                            this.$storage.setStorageSync("isLoggin", false);
+                            this.$router.go('/login');
                         }
                         }).catch((error)=>{
+
                         console.log(error);
+                        
                         });
                 });
                 
@@ -556,6 +564,7 @@ export default {
     created(){
 
         console.log(window.Laravel.isLoggin);
+        console.log("Status:" + this.$storage.getStorageSync('isLoggin'));
 
         if(window.Laravel.isLoggin){
             this.isLoggin = true;
@@ -563,6 +572,8 @@ export default {
             this.isLoggin = false;
         }
     },
+
+    
      
     
 };

@@ -33,12 +33,12 @@
                             </thead>
                             <tbody class="table-border-bottom-0">
                                 <tr v-for="list in TranData.data" :key="list.id" >
-                                    <td class="text-center">{{ date(list.created_at)}}</td>
-                                    <td>{{ list.tran_id}}</td>
-                                    <td>{{ list.tran_type}}</td>
-                                    <td>{{ list.tran_detail}}</td>
-                                    <td>{{ formatPrice(list.prices)}}</td>
-                                </tr>
+                                        <td class="text-center">{{ date(list.created_at)}}</td>
+                                        <td>{{ list.tran_id}}</td>
+                                        <td>{{ list.tran_type}}</td>
+                                        <td>{{ list.tran_detail}}</td>
+                                        <td>{{ formatPrice(list.prices)}}</td>                          
+                                    </tr>
                             </tbody>
                         </table>
                         <pagination :pagination="TranData" :offset="4" @paginate="GetTran($event)" />
@@ -47,7 +47,6 @@
                </div>
             </div>
         </div>
-        
     </div>
 </template>
 
@@ -59,6 +58,7 @@ export default {
 
     data() {
         return {
+            print:'',
             TranData:[],
             month_type:'y',
             dmy:''
@@ -101,13 +101,14 @@ export default {
         this.GetTran();
     },
 
-    beforeRouteEnter (to, from, next) {
-      if(window.Laravel.isLoggin){
-          next();
-      }else{
-          window.location.href ="/login"
-      }
-    },
+    // beforeRouteEnter (to, from, next) {
+    //   if(window.Laravel.isLoggin){
+    //       next();
+    //   }else{
+    //       window.location.href ="/login"
+    //      // location.reload();
+    //   }
+    // },
 
 };
 </script>

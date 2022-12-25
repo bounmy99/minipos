@@ -65,13 +65,13 @@
       <thead>
         
         <tr>
-          <th>ລະຫັດ</th>
-          <th class="text-center">ຮູບພາບ</th>
-          <th>ຊື່ສີ້ນຄ້າ</th>
-          <th>ຈຳນວນ</th>
-          <th>ລາຄາຊື້</th>
-          <th>ລາຄາຂາຍ</th>
-          <th>Actions</th>
+          <th class="text">ລະຫັດ</th>
+          <th class="text-center text">ຮູບພາບ</th>
+          <th class="text">ຊື່ສີ້ນຄ້າ</th>
+          <th class="text">ຈຳນວນ</th>
+          <th class="text">ລາຄາຊື້</th>
+          <th class="text">ລາຄາຂາຍ</th>
+          <th class="text">Actions</th>
         </tr>
       </thead>
       <tbody class="table-border-bottom-0" > 
@@ -354,6 +354,9 @@ export default {
         getDataStore(page){
           this.$axios.get("/sanctum/csrf-cookie").then((response)=>{
                 this.$axios.get(`api/store?page=${page}&search=${this.search}`).then((response)=>{
+                  if(response.data.message=='Unauthenticated.'){
+                    window.location.href = window.location.href.replace(/#.*$/,'');
+                  }
                     this.DataStore = response.data;
                   }).catch((error)=>{
                     console.log(error);
@@ -373,21 +376,25 @@ export default {
       this.getDataStore();
     },
 
-    beforeRouteEnter (to, from, next) {
-    
-      if(window.Laravel.isLoggin){
-          next();
-      }else{
-          window.location.href ="/login"
-      }
-    }
+    // beforeRouteEnter (to, from, next) {
+    //   if(window.Laravel.isLoggin){
+    //       next();
+    //   }else{
+    //       window.location.href ="/login"
+    //      // location.reload();
+    //   }
+    // }
 
     
   
 };
 </script>
 
-<style lang="scss" scoped>
-
-
+<style>
+  .form-label{
+    font-size: 1rem;
+  }
+  .text{
+    font-size: 1rem;
+  }
 </style>
